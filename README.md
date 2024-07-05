@@ -1,6 +1,6 @@
 # how-to-create-more-than-one-legend-item-for-single-cartesian-series
 
-This repository contains a sample to implement how to create more than one legend item for single cartesian seriese on a [Syncfusion Flutter Chart](https://help.syncfusion.com/flutter/cartesian-charts/getting-started) widget.
+This repository contains a sample to implement how to create more than one legend item for single cartesian series on a [Syncfusion Flutter Chart](https://help.syncfusion.com/flutter/cartesian-charts/getting-started) widget.
 
 Refer KB through this link [KB](https://support.syncfusion.com/agent/kb/16536).
 
