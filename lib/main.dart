@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'dart:ui' as ui;
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_charts/src/charts/common/core_legend.dart';
 
@@ -9,6 +10,7 @@ void main() {
 
 class ChartApp extends StatelessWidget {
   const ChartApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,79 +31,103 @@ class _MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<_MyHomePage> {
   List<_SalesData> data = [
     _SalesData('Jan', 35),
-    _SalesData('Oct', -35),
-    _SalesData('Feb', 28),
-    _SalesData('Aug', -34),
-    _SalesData('Mar', 34),
-    _SalesData('July', -32),
-    _SalesData('Apr', 32),
-    _SalesData('Jun', -40),
-    _SalesData('May', 40),
-    _SalesData('Sep', -28),
+    _SalesData('Feb', -35),
+    _SalesData('Mar', 28),
+    _SalesData('Apr', -34),
+    _SalesData('May', 34),
+    _SalesData('Jun', -32),
+    _SalesData('July', 32),
+    _SalesData('Aug', -40),
+    _SalesData('Sep', 40),
+    _SalesData('Oct', -28),
+    _SalesData('Nov', 30),
+    _SalesData('Dec', -38),
   ];
+  double _midValue = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SfCartesianChart(
         primaryXAxis: const CategoryAxis(),
-        title: const ChartTitle(text: 'Half yearly sales analysis'),
         legend: const Legend(isVisible: true),
+        onActualRangeChanged: (ActualRangeChangedArgs rangeChangedArgs) {
+          if (rangeChangedArgs.orientation == AxisOrientation.vertical) {
+            _midValue = rangeChangedArgs.visibleMax /
+                (rangeChangedArgs.visibleMax.abs() +
+                    rangeChangedArgs.visibleMin.abs());
+          }
+        },
         series: <CartesianSeries<_SalesData, String>>[
           ColumnSeries<_SalesData, String>(
             dataSource: data,
-            xValueMapper: (_SalesData sales, _) => sales.year,
-            yValueMapper: (_SalesData sales, _) => sales.sales,
-            pointColorMapper: (_SalesData sales, _) =>
-                sales.sales.isNegative ? Colors.red : Colors.green,
-            name: 'Sales',
-            onCreateRenderer: (series) {
-              return CustomColumnSeriesRenderer();
+            xValueMapper: (_SalesData data, _) => data.year,
+            yValueMapper: (_SalesData data, _) => data.sales,
+            color: Colors.green.withOpacity(0.4),
+            onCreateShader: (ShaderDetails details) {
+              return ui.Gradient.linear(
+                details.rect.topCenter,
+                details.rect.bottomCenter,
+                <Color>[
+                  Colors.green,
+                  Colors.green,
+                  Colors.red,
+                  Colors.red,
+                ],
+                <double>[
+                  0,
+                  _midValue,
+                  _midValue,
+                  1,
+                ],
+              );
             },
-          )
+            borderColor: Colors.green,
+            onCreateRenderer: (series) {
+              return _CustomColumnSeriesRenderer();
+            },
+          ),
         ],
       ),
     );
   }
 }
 
-class CustomColumnSeriesRenderer<T, D> extends ColumnSeriesRenderer<T, D> {
-  CustomColumnSeriesRenderer();
+class _CustomColumnSeriesRenderer<T, D> extends ColumnSeriesRenderer<T, D> {
+  _CustomColumnSeriesRenderer();
 
-  bool isToggled = false;
-  List<String> legendText = ['Positive', 'Negative'];
-  List<Color> iconPalette = [Colors.green, Colors.red];
+  final List<String> _legendText = ['Positive', 'Negative'];
+  final List<Color> _iconPalette = [Colors.green, Colors.red];
+  bool positiveVisible = true;
+  bool negativeVisible = true;
 
   @override
   List<LegendItem>? buildLegendItems(int index) {
-    List<LegendItem> items = <LegendItem>[];
-    int i = 0;
-    for (i; i < 2; i++) {
-      LegendItem item = LegendItem(
-          text: legendText[i],
-          iconType: ShapeMarkerType.rectangle,
-          iconColor: iconPalette[i],
-          onTap: _handleLegendItemTapped,
-          iconBorderWidth: 1);
-      items.add(item);
-    }
-    return items;
+    return List<LegendItem>.generate(_legendText.length, (i) {
+      return LegendItem(
+        text: _legendText[i],
+        iconType: ShapeMarkerType.rectangle,
+        iconColor: _iconPalette[i],
+        onTap: (LegendItem item, bool isToggled) {
+          _handleLegendItemTapped(i);
+        },
+        iconBorderWidth: 1,
+      );
+    });
   }
 
-  void _handleLegendItemTapped(LegendItem item, bool isToggled) {
-    for (int i = 0; i < segments.length; i++) {
-      ColumnSegment segment = segments[i] as ColumnSegment;
-      bool isPositive = item.text == 'Positive' && !segment.y.isNegative;
-      bool isNegative = item.text == 'Negative' && segment.y.isNegative;
-      if (isPositive) {
-        segment.isVisible = !isToggled;
-      } else if (isNegative) {
-        segment.isVisible = !isToggled;
-      }
-      if (segment.isVisible == !isPositive) {
-        item.onToggled?.call();
-      }
-      if (segment.isVisible == !isNegative) {
-        item.onToggled?.call();
+  void _handleLegendItemTapped(int index) {
+    if (index == 0) {
+      positiveVisible = !positiveVisible;
+    } else if (index == 1) {
+      negativeVisible = !negativeVisible;
+    }
+
+    for (ChartSegment segment in segments) {
+      ColumnSegment segmentTyped = segment as ColumnSegment;
+      if (segmentTyped.y.isNegative) {
+        segmentTyped.isVisible = negativeVisible;
+      } else {
+        segmentTyped.isVisible = positiveVisible;
       }
     }
 
@@ -110,20 +136,12 @@ class CustomColumnSeriesRenderer<T, D> extends ColumnSeriesRenderer<T, D> {
 
   @override
   ColumnSegment<T, D> createSegment() {
-    return CustomColumnSegment<T, D>();
+    return _CustomColumnSegment<T, D>();
   }
 }
 
-class CustomColumnSegment<T, D> extends ColumnSegment<T, D> {
-  CustomColumnSegment();
-
-  @override
-  void transformValues() {
-    if (!series.segmentAt(currentSegmentIndex).isVisible) {
-      return;
-    }
-    super.transformValues();
-  }
+class _CustomColumnSegment<T, D> extends ColumnSegment<T, D> {
+  _CustomColumnSegment();
 
   @override
   void onPaint(Canvas canvas) {
