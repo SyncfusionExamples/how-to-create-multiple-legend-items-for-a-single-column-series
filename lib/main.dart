@@ -29,7 +29,7 @@ class _MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<_MyHomePage> {
-  List<_SalesData> data = [
+  final List<_SalesData> _data = [
     _SalesData('Jan', 35),
     _SalesData('Feb', -35),
     _SalesData('Mar', 28),
@@ -59,7 +59,7 @@ class _MyHomePageState extends State<_MyHomePage> {
         },
         series: <CartesianSeries<_SalesData, String>>[
           ColumnSeries<_SalesData, String>(
-            dataSource: data,
+            dataSource: _data,
             xValueMapper: (_SalesData data, _) => data.year,
             yValueMapper: (_SalesData data, _) => data.sales,
             color: Colors.green.withOpacity(0.4),
@@ -82,7 +82,7 @@ class _MyHomePageState extends State<_MyHomePage> {
               );
             },
             borderColor: Colors.green,
-            onCreateRenderer: (series) {
+            onCreateRenderer: (ChartSeries series) {
               return _CustomColumnSeriesRenderer();
             },
           ),
@@ -97,18 +97,18 @@ class _CustomColumnSeriesRenderer<T, D> extends ColumnSeriesRenderer<T, D> {
 
   final List<String> _legendText = ['Positive', 'Negative'];
   final List<Color> _iconPalette = [Colors.green, Colors.red];
-  bool positiveVisible = true;
-  bool negativeVisible = true;
+  bool _positiveVisible = true;
+  bool _negativeVisible = true;
 
   @override
   List<LegendItem>? buildLegendItems(int index) {
-    return List<LegendItem>.generate(_legendText.length, (i) {
+    return List<LegendItem>.generate(_legendText.length, (index) {
       return LegendItem(
-        text: _legendText[i],
+        text: _legendText[index],
         iconType: ShapeMarkerType.rectangle,
-        iconColor: _iconPalette[i],
+        iconColor: _iconPalette[index],
         onTap: (LegendItem item, bool isToggled) {
-          _handleLegendItemTapped(i);
+          _handleLegendItemTapped(index);
         },
         iconBorderWidth: 1,
       );
@@ -117,17 +117,17 @@ class _CustomColumnSeriesRenderer<T, D> extends ColumnSeriesRenderer<T, D> {
 
   void _handleLegendItemTapped(int index) {
     if (index == 0) {
-      positiveVisible = !positiveVisible;
-    } else if (index == 1) {
-      negativeVisible = !negativeVisible;
+      _positiveVisible = !_positiveVisible;
+    } else {
+      _negativeVisible = !_negativeVisible;
     }
 
-    for (ChartSegment segment in segments) {
+    for (final ChartSegment segment in segments) {
       ColumnSegment segmentTyped = segment as ColumnSegment;
       if (segmentTyped.y.isNegative) {
-        segmentTyped.isVisible = negativeVisible;
+        segmentTyped.isVisible = _negativeVisible;
       } else {
-        segmentTyped.isVisible = positiveVisible;
+        segmentTyped.isVisible = _positiveVisible;
       }
     }
 
