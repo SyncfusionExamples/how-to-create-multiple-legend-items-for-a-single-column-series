@@ -29,19 +29,19 @@ class _MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<_MyHomePage> {
-  final List<_SalesData> _data = [
-    _SalesData('Jan', 35),
-    _SalesData('Feb', -35),
-    _SalesData('Mar', 28),
-    _SalesData('Apr', -34),
-    _SalesData('May', 34),
-    _SalesData('Jun', -32),
-    _SalesData('July', 32),
-    _SalesData('Aug', -40),
-    _SalesData('Sep', 40),
-    _SalesData('Oct', -28),
-    _SalesData('Nov', 30),
-    _SalesData('Dec', -38),
+  final List<_ChartData> _data = [
+    _ChartData('Jan', 35),
+    _ChartData('Feb', -35),
+    _ChartData('Mar', 28),
+    _ChartData('Apr', -34),
+    _ChartData('May', 34),
+    _ChartData('Jun', -32),
+    _ChartData('July', 32),
+    _ChartData('Aug', -40),
+    _ChartData('Sep', 40),
+    _ChartData('Oct', -28),
+    _ChartData('Nov', 30),
+    _ChartData('Dec', -38),
   ];
   double _midValue = 0;
   @override
@@ -57,11 +57,11 @@ class _MyHomePageState extends State<_MyHomePage> {
                     rangeChangedArgs.visibleMin.abs());
           }
         },
-        series: <CartesianSeries<_SalesData, String>>[
-          ColumnSeries<_SalesData, String>(
+        series: <CartesianSeries<_ChartData, String>>[
+          ColumnSeries<_ChartData, String>(
             dataSource: _data,
-            xValueMapper: (_SalesData data, _) => data.year,
-            yValueMapper: (_SalesData data, _) => data.sales,
+            xValueMapper: (_ChartData data, int index) => data.year,
+            yValueMapper: (_ChartData data, int index) => data.sales,
             color: Colors.green.withOpacity(0.4),
             onCreateShader: (ShaderDetails details) {
               return ui.Gradient.linear(
@@ -123,12 +123,9 @@ class _CustomColumnSeriesRenderer<T, D> extends ColumnSeriesRenderer<T, D> {
     }
 
     for (final ChartSegment segment in segments) {
-      ColumnSegment segmentTyped = segment as ColumnSegment;
-      if (segmentTyped.y.isNegative) {
-        segmentTyped.isVisible = _negativeVisible;
-      } else {
-        segmentTyped.isVisible = _positiveVisible;
-      }
+      ColumnSegment columnSegment = segment as ColumnSegment;
+      columnSegment.isVisible =
+          columnSegment.y.isNegative ? _negativeVisible : _positiveVisible;
     }
 
     markNeedsUpdate();
@@ -145,15 +142,15 @@ class _CustomColumnSegment<T, D> extends ColumnSegment<T, D> {
 
   @override
   void onPaint(Canvas canvas) {
-    if (!series.segmentAt(currentSegmentIndex).isVisible) {
+    if (!isVisible) {
       return;
     }
     super.onPaint(canvas);
   }
 }
 
-class _SalesData {
-  _SalesData(this.year, this.sales);
+class _ChartData {
+  _ChartData(this.year, this.sales);
 
   final String year;
   final double sales;
