@@ -1,4 +1,4 @@
-# how-to-customize-both-the-color-and-border-of-the-segments-in-a-single-column-series-supporting-multiple-legends
+# how-to-create-multiple-legend-items-for-a-single-column-series-and-customize-segment-colors-and-borders
 
 This repository contains a sample to implement how to customize both the color and border of the segments in a single column series supporting multiple legends [Syncfusion Flutter Chart](https://help.syncfusion.com/flutter/cartesian-charts/getting-started) widget.
 
