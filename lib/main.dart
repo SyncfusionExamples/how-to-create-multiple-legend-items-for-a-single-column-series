@@ -62,7 +62,7 @@ class _MyHomePageState extends State<_MyHomePage> {
             dataSource: _data,
             xValueMapper: (_ChartData data, int index) => data.year,
             yValueMapper: (_ChartData data, int index) => data.sales,
-            color: Colors.green.withOpacity(0.4),
+            color: Colors.green.withValues(alpha: 0.4),
             onCreateShader: (ShaderDetails details) {
               return ui.Gradient.linear(
                 details.rect.topCenter,
@@ -101,10 +101,11 @@ class _CustomColumnSeriesRenderer<T, D> extends ColumnSeriesRenderer<T, D> {
   bool _negativeVisible = true;
 
   @override
-  List<LegendItem>? buildLegendItems(int index) {
-    return List<LegendItem>.generate(_legendText.length, (index) {
-      return LegendItem(
+  List<CartesianLegendItem>? buildLegendItems(int index) {
+    return List<CartesianLegendItem>.generate(_legendText.length, (index) {
+      return CartesianLegendItem(
         text: _legendText[index],
+        seriesIndex: 0,
         iconType: ShapeMarkerType.rectangle,
         iconColor: _iconPalette[index],
         onTap: (LegendItem item, bool isToggled) {
