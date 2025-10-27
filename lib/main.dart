@@ -105,7 +105,7 @@ class _CustomColumnSeriesRenderer<T, D> extends ColumnSeriesRenderer<T, D> {
     return List<CartesianLegendItem>.generate(_legendText.length, (index) {
       return CartesianLegendItem(
         text: _legendText[index],
-        seriesIndex: 0,
+        seriesIndex: this.index,
         iconType: ShapeMarkerType.rectangle,
         iconColor: _iconPalette[index],
         onTap: (LegendItem item, bool isToggled) {
